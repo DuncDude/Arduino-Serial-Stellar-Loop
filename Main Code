@@ -1,0 +1,229 @@
+//SERIAL SPACERACE
+//DESIGNED AND CODED BY DUNCAN H.G. ANDREWS
+// MADE TO UTILIZE SMALL MEMORY AND LIMITED INTERFACES VIA SERIAL COMUNICATIONS
+//MADE MAY 2018
+
+
+
+
+#include <SoftwareSerial.h>
+// include the serial library
+
+//GLOBAL VARIBLES
+
+//BUTTON ALIGMENT FOR THE FUNDUINO ATTACHMENT
+int left_button = 5;
+int right_button = 3;
+int start_button = 6;
+
+int buttons[] = { left_button, right_button, start_button};
+
+//BASIC DECLARTION OF POSTIONS AND SCORE
+int postion = 10;
+int score = 0;
+int scoreLevel= 0;
+int scoreLevelMark = 500;
+int speed = 100;
+int objectPostion;
+int objectCount = 10;
+
+//BOOLEAN VALUES FOR LEVEL UPS AND REPLAY OF GAME, WHEN A LEVEL IS ACHIVED THE VALUE BECOMES TRUE.
+boolean intro = true;
+boolean Story1 = true;
+boolean scoreScreen = true;
+boolean replay = true;
+
+//INTERGER VALUES FOR THE WALLS AND THEIR DISTANCE REACH AND THICKNESS
+int leftLevelMax = 3;
+int rightLevelMax = 17;
+int leftLevelMin = 0;
+int rightLevelMin = 20;
+
+
+
+
+void setup() {
+  //CHECK THE FUNDUINO AND PUT BUTTON INPUTS IN AN ARRAY
+    for (int i; i < 7; i++)
+  {
+   pinMode(buttons[i], INPUT);
+   digitalWrite(buttons[i], HIGH);
+  }
+Serial.begin(9600);
+}
+
+void loop() {
+
+
+  
+  //INTRO AND GAME EXPLANTION
+  while (intro == true){
+
+    while (Story1 == true){
+
+       Serial.println("Welcome to Serial SpaceRace");
+       Serial.println("The year is 2045 and Earth's Stellar-Loop program");
+       Serial.println("has just been opened for private companies. The");
+       Serial.println("Stellar-Loop allows small spacecraft the ability to");
+       Serial.println("travel across vast swaths of space in mere minutes. You,");
+       Serial.println("a contractor for the Helix Corp have been selected ");
+       Serial.println("to be the first nonmilitary pilot to travel to the virtually ");
+       Serial.println("unknown Elysium Cluster of possible semi habitable planets.");
+       Serial.println("Your mission is to conduct reconnaissance on all of the planets in");
+       Serial.println("the Elysium Cluster and report back to Earth.");
+       Serial.println("-------------------------------------------------------------------");
+       Serial.println("Guide:");
+       Serial.println("To travel through the Steller-Loop you must");
+       Serial.println("avoid cosmic debris while staying within the Loop’s");
+       Serial.println("walls. Because of the speed of which you will travel, there");
+       Serial.println("are no windows so you must use the standard HC-SM-01");
+       Serial.println("interface to control your ship.");
+       Serial.println("U is your Trinity Class Mark 1 Space Craft");
+       Serial.println("*  are the wall barriers (avoid these)");
+       Serial.println("$ are floating cosmic debris (avoid these)");
+       Serial.println(". are the trails of cosmic debris");
+       Serial.println("When your ship starts to follow the trails of debris your");
+       Serial.println("status screen will show your ship as & symbol.");
+       
+
+       Story1 = false;
+    }
+    
+    //WAIT FOR THE START BUTTON TO CONTINUE TO THE ACTUAL GAME
+    int startButton = digitalRead(start_button);
+  switch (startButton){
+    case LOW:
+    intro = false;
+
+  }}
+
+//ACTUAL BEGIN GAME, WHILE LOOP KEEPS YOU IN GAME TILL OBJEXT IS HIT THEN BEGAIN THE FINAL SCORE AND REPLAY WHILE LOOP
+  while ( replay == true){
+// DECLARE ARRAY FOR THE SCREEN AND THE LEFT AND RIGHT DISTANCE FROM THE WALLS
+  char game[20];
+  int wallLeft = random(leftLevelMin,leftLevelMax);
+  int wallRight = random(rightLevelMax,rightLevelMin);
+  
+//CHECK FOR USER INPUT TO MOVE THE SPACESHIP
+int pos = digitalRead(left_button);
+  switch (pos){
+    case LOW:
+    postion = postion-1;
+    break;
+
+  }
+
+ pos = digitalRead(right_button);
+  switch (pos){
+    case LOW:
+    postion = postion+1;
+    break;
+
+  }
+  
+//CREATE AND FILL GAME WITH WALL AND SPACES FROM THE GAME ARRAY
+  for(int i = 0; i < 20; i++){
+    if (i <= wallLeft || i >= wallRight ){
+      game[i] = '*';
+    }
+    else {
+      game[i] = ' ';
+    }
+  }
+
+//CREATES OBJECT AND COUNTDOWN
+ if (objectCount <= 0){
+  
+    objectPostion = random(leftLevelMax, rightLevelMax);
+    objectCount = 10;
+ }
+    game[objectPostion] = '.';
+    objectCount--;
+    if (objectCount == 0){
+      game[objectPostion] = '$';
+      
+    }
+ 
+
+// PUT PLAYER INTO VISUAL ARRAY  
+        game[postion] = 'U';
+
+//OBJECT CRASH CHECKS
+
+        if (objectCount > 0 && objectPostion == postion){
+          game[postion] = '&';
+        }
+        if (postion <= wallLeft || postion >= wallRight ){
+          replay = false;
+        }
+        if (objectCount == 0 && objectPostion == postion){
+          replay = false;
+        }
+        
+ // FINAL PRINT OF GAME ARRAY OBJECT AND CHARACTER POSTION       
+    for(int i = 0; i < 20; i++){
+         Serial.print(game[i]);
+    }
+  Serial.println("");
+  // SPEED AND SCORE
+  delay(speed);
+  score++;
+// LEFT MARGIN LEVEL DISPLAY
+  Serial.print("Level: "),Serial.print(scoreLevel);
+    
+//LEVEL UP SYSTEM, WORK IN INCREMENTS OF 500, UPS SPEED WALL DISTANCES ETC
+  if (score == scoreLevelMark ){
+    scoreLevelMark = scoreLevelMark + 500;
+    scoreLevel++;
+    leftLevelMax++;
+    rightLevelMax--;
+
+    leftLevelMin++;
+    rightLevelMin--;
+    speed = speed -10;
+    
+  }
+ 
+  
+  }// END OF WHILE MAIN GAME LOOP
+
+  
+
+// FINAL SCORE AND REPLAY WHILE LOOP
+  while (scoreScreen == true){
+  Serial.print(" Score: ");
+  Serial.println(score);
+  Serial.print(" Press START to try again ");
+  scoreScreen = false;
+  }
+int startButton = digitalRead(start_button);
+  switch (startButton){
+    case LOW:
+   postion = 10;
+
+ //RESET ALL VALUES
+  score = 0;
+  scoreLevel= 0;
+  scoreLevelMark = 500;
+  leftLevelMax = 3;
+  rightLevelMax = 17;
+  leftLevelMin = 0;
+  rightLevelMin = 20;
+  scoreScreen = true;
+  replay = true;
+  
+    break;
+
+  }
+  //END OF FINAL SCORE REPLAY FUNCTION 
+
+  
+    
+
+
+
+//END OF LOOP() FUNCTION
+}
+
+
+
